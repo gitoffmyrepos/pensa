@@ -50,7 +50,7 @@ jobs:
         working-directory: dev/natasha
 
       - name: Initialize and Plan Staging-Integration
-        if: github.ref == 'refs/heads/master'
+        # if: github.ref == 'refs/heads/master'
         run: |
           terraform init
           terraform plan -var-file="sample-terraform.tfvars" -out=tfplan -input=false -no-color
@@ -58,7 +58,7 @@ jobs:
         working-directory: staging/integration
 
       - name: Initialize and Plan Staging-Performance
-        if: github.ref == 'refs/heads/master'
+        # if: github.ref == 'refs/heads/master'
         run: |
           terraform init
           terraform plan -var-file="sample-terraform.tfvars" -out=tfplan -input=false -no-color
@@ -66,7 +66,7 @@ jobs:
         working-directory: staging/performance
 
       - name: Initialize and Plan Prod
-        if: github.ref == 'refs/heads/master'
+        # if: github.ref == 'refs/heads/master'
         run: |
           terraform init
           terraform plan -var-file="sample-terraform.tfvars" -out=tfplan -input=false -no-color
