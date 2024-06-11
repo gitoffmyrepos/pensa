@@ -1,4 +1,4 @@
-name: Terraform
+name: Multi-Environment Terraform Plan
 
 on:
   push:
@@ -10,24 +10,82 @@ on:
 
 jobs:
   terraform:
-    name: 'Terraform Plan'
     runs-on: ubuntu-latest
+    services:
+      localstack:
+        image: localstack/localstack
+        ports:
+          - 4566:4566
+        env:
+          SERVICES: s3
+          DEFAULT_REGION: us-east-1
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Set up Terraform
+      - name: Setup Terraform
         uses: hashicorp/setup-terraform@v1
 
-      - name: Terraform Init
-        run: terraform init
-        working-directory: terraform/
+      - name: Initialize and Plan Dev
+        run: |
+          terraform init
+          terraform plan
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: 'us-east-1'
+        working-directory: dev
 
-      - name: Terraform Plan
-        run: terraform plan -var-file=sample-terraform.tfvars -out=tfplan
-        working-directory: terraform/
+      - name: Initialize and Plan Dev-Clint
+        run: |
+          terraform init
+          terraform plan
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: 'us-east-1'
+        working-directory: dev/clint
 
-      - name: Show Terraform Plan
-        run: terraform show -json tfplan
-        working-directory: terraform/
+      - name: Initialize and Plan Dev-Natasha
+        run: |
+          terraform init
+          terraform plan
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: 'us-east-1'
+        working-directory: dev/natasha
+
+      - name: Initialize and Plan Staging-Integration
+        if: github.ref == 'refs/heads/master'
+        run: |
+          terraform init
+          terraform plan
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: 'us-east-1'
+        working-directory: staging/integration
+
+      - name: Initialize and Plan Staging-Performance
+        if: github.ref == 'refs/heads/master'
+        run: |
+          terraform init
+          terraform plan
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: 'us-east-1'
+        working-directory: staging/performance
+
+      - name: Initialize and Plan Prod
+        if: github.ref == 'refs/heads/master'
+        run: |
+          terraform init
+          terraform plan
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: 'us-east-1'
+        working-directory: prod
